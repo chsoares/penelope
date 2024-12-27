@@ -4289,8 +4289,8 @@ class Options:
 	log_levels = {"silent":'WARNING', "debug":'DEBUG'}
 
 	def __init__(self):
-		self.basedir = Path.home() / f'.{__program__}'
-		self.default_listener_port = 4444
+		self.basedir = Path(os.environ.get('boxpwd', '')) / __program__
+		self.default_listener_port = 9001
 		self.default_interface = "0.0.0.0"
 		self.hints = False
 		self.no_history = False
