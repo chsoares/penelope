@@ -3345,8 +3345,9 @@ class Session:
 					return False
 
 				tail_cmd = f'\ntail -n+0 -f {output_file_name}'
+				logger.info(f"Saving output to {paint(output_file_name).yellow_DIM}")
 				Open(tail_cmd, terminal=True)
-				print(tail_cmd)
+			
 
 				self.exec(program, stdin_src=input_file, stdout_dst=output_file, stderr_dst=output_file)
 		except Exception as e:
