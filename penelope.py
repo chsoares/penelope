@@ -3654,7 +3654,7 @@ class peas(Module):
 		elif self.session.OS == 'Windows':
 			logger.error("This module runs only in Unix shells")
 
-class peas(Module):
+class deepce(Module):
 	description = 'Run the latest version of DEEPCE in the background'
 	def run(self):
 		if self.session.OS == 'Unix':
