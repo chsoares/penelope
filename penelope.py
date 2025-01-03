@@ -4282,7 +4282,7 @@ BINARIES = {
 	'ncat': "https://github.com/andrew-d/static-binaries/raw/master/binaries/linux/x86_64/ncat",
 	'linpeas': "https://github.com/carlospolop/PEASS-ng/releases/latest/download/linpeas.sh",
 	'winpeas': "https://github.com/carlospolop/PEASS-ng/releases/latest/download/winPEASany.exe",
-	'lse': "https://raw.githubusercontent.com/diego-treitos/linux-smart-enumeration/master/lse.sh",
+	'lse': "https://github.com/chsoares/linux-smart-enumeration/raw/refs/heads/master/lse.sh",
 	'powerup': "https://raw.githubusercontent.com/PowerShellEmpire/PowerTools/master/PowerUp/PowerUp.ps1",
 	'sharpup': "https://github.com/r3motecontrol/Ghostpack-CompiledBinaries/blob/master/SharpUp.exe",
 	'ngrok_linux': "https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-linux-amd64.tgz",
